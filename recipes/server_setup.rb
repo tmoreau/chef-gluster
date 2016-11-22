@@ -93,9 +93,11 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
       force = false
       options = ''
       case volume_values['volume_type']
+
       when 'distributed'
         Chef::Log.warn('You have specified distributed, serious data loss can occur in this mode as files are spread randomly among the bricks')
         options = ' '
+
       when 'replicated'
         # Replicated can be anything from two nodes to X nodes. Replica_count should equal number of bricks.
         if brick_count < 2
@@ -105,6 +107,13 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         Chef::Log.warn('You have specified replicated, so the attribute replica_count will be set to be the same number as the bricks you have')
         node.set['gluster']['server']['volumes'][volume_name]['replica_count'] = brick_count
         options = "replica #{brick_count}"
+
+        # if arbiter parameter is set
+        if volume_values['arbiter'].!empty?
+          arbiter_count = volume_values['arbiter'].count
+          options << " arbiter #{arbiter_count}"
+        end
+    
       when 'distributed-replicated'
         # brick count has to be a multiple of replica count
         if (brick_count % volume_values['replica_count']).nonzero?
@@ -113,6 +122,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         else
           options = "replica #{volume_values['replica_count']}"
         end
+
       when 'striped'
         # This is similar to a replicated volume, stripe count is the same as the number of bricks
         Chef::Log.warn('You have specified striped, so the attribute replica_count will be set to be the same number as the bricks you have')
