@@ -24,8 +24,9 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
   # ToDO: change hardcoded VG name gluster into an attribute
 
   # if we are on the arbiter update volume size usine arbiter_size when defined
+  volume_size = volume_values['size']
   if volume_values.attribute?('arbiter_size') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
-    node.default['gluster']['server']['volumes'][volume_name]['size'] = volume_values['arbiter_size']
+    volume_size = volume_values['arbiter_size']
   end
   require 'lvm'
 
@@ -53,7 +54,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         if volume_lv_size_req > lv_size_cur
           Chef::Log.warn("Requested size #{volume_lv_size_req} is larger than current size #{lv_size_cur}, resizing volume")
           lvm_logical_volume volume_name do
-            size volume_values['size']
+            size volume_size
             group 'gluster'
             action :resize
           end
