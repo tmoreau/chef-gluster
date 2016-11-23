@@ -115,7 +115,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         options = "replica #{brick_count}"
 
         # if arbiter parameter is set
-        if volume_values['arbiter'].notempty?
+        if volume_values['arbiter'].!empty?
           arbiter_count = volume_values['arbiter'].count
           options << " arbiter #{arbiter_count}"
         end
