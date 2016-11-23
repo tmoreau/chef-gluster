@@ -22,6 +22,11 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
   # 2. Compare to the size set for the gluster volume
   # 3. If different, run a resize action against that volume
   # ToDO: change hardcoded VG name gluster into an attribute
+
+  # if we are on the arbiter update volume size usine arbiter_size when defined
+  if volume_values.attribute?('arbiter_size') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
+    volume_values['size'] = volume_values['arbiter_size']
+  end
   require 'lvm'
 
   LVM::LVM.new do |lvm|

@@ -37,6 +37,13 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
   end
 
   replica_count = volume_values['replica_count']
+  arbiter_count = volume_values['arbiter'].count if volume_values['arbiter'].notempty?
+  arbiter_option = ''
+
+  if volume_values['arbiter'].notempty? && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
+    arbiter_option = "arbiter #{arbiter_count}"
+  end
+
   next if node['gluster']['server']['volumes'][volume_name]['bricks_waiting_to_join'].empty?
   # The number of bricks in bricks_waiting_to_join has to be a modulus of the replica_count we are using for our gluster volume
   if (brick_count % replica_count).zero?
@@ -55,7 +62,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
   elsif volume_values['volume_type'] == 'replicated'
     Chef::Log.warn("#{volume_name} is a replicated volume, adjusting replica count to match new number of bricks")
     node.set['gluster']['server']['volumes'][volume_name][replica_count] = brick_count
-    execute "gluster volume add-brick #{volume_name} replica #{brick_count} #{node['gluster']['server']['volumes'][volume_name]['bricks_waiting_to_join']}" do
+    execute "gluster volume add-brick #{volume_name} replica #{brick_count} #{arbiter_option} #{node['gluster']['server']['volumes'][volume_name]['bricks_waiting_to_join']}" do
       action :run
     end
     node.set['gluster']['server']['volumes'][volume_name]['bricks_waiting_to_join'] = ''

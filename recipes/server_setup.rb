@@ -40,9 +40,14 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         Chef::Log.warn('No filesystem specified, defaulting to xfs')
         filesystem = 'xfs'
       end
+      # if we are on the arbiter update volume size usine arbiter_size when defined
+      if volume_values.attribute?('arbiter_size') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
+        volume_values['size'] = volume_values['arbiter_size']
+      end
+
       # Even though this says volume_name, it's actually Brick Name. At the moment this method only supports one brick per volume per server
       logical_volume volume_name do
-        size volume_values['size']
+        size volume_values['size'] 
         filesystem filesystem
         mount_point "#{node['gluster']['server']['brick_mount_path']}/#{volume_name}"
       end
@@ -109,7 +114,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
         options = "replica #{brick_count}"
 
         # if arbiter parameter is set
-        if volume_values['arbiter'].!empty?
+        if volume_values['arbiter'].notempty?
           arbiter_count = volume_values['arbiter'].count
           options << " arbiter #{arbiter_count}"
         end
