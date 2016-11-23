@@ -42,7 +42,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
       end
       # if we are on the arbiter update volume size usine arbiter_size when defined
       if volume_values.attribute?('arbiter_size') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
-        volume_values['size'] = volume_values['arbiter_size']
+        node.default['gluster']['server']['volumes'][volume_name]['size'] = volume_values['arbiter_size']
       end
 
       # Even though this says volume_name, it's actually Brick Name. At the moment this method only supports one brick per volume per server

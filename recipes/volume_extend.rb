@@ -25,7 +25,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
 
   # if we are on the arbiter update volume size usine arbiter_size when defined
   if volume_values.attribute?('arbiter_size') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
-    volume_values['size'] = volume_values['arbiter_size']
+    node.default['gluster']['server']['volumes'][volume_name]['size'] = volume_values['arbiter_size']
   end
   require 'lvm'
 
