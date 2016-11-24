@@ -37,7 +37,7 @@ node['gluster']['server']['volumes'].each do |volume_name, volume_values|
   end
 
   replica_count = volume_values['replica_count']
-  arbiter_count = volume_values['arbiter'].count if volume_values['arbiter'].!empty?
+  arbiter_count = volume_values['arbiter'].count if volume_values.attribute?('arbiter')
   arbiter_option = ''
 
   if volume_values.attribute?('arbiter') && ( volume_values['arbiter'].include?(node['fqdn']) || volume_values['arbiter'].include?(node['hostname']) )
